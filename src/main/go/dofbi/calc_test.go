@@ -2,6 +2,7 @@ package calc
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -48,4 +49,37 @@ func TestAverageTemperature(t *testing.T){
 	if avg != expected {
 		t.Fatalf("Expected %f, got %f", expected, avg)
 	}
+}
+
+func TestCalcTemperature(t *testing.T){
+	tmpfile, err := os.CreateTemp("","example")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	text := []byte("Dakar;12\nTambacounda;8.9\nDakar;15\nTambacounda;10.0")
+
+	if _, err := tmpfile.Write(text); err != nil {
+		t.Fatal(err)
+	}
+	if err := tmpfile.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	statsParVille, err := CalcTemperature(tmpfile.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stats := statsParVille["Dakar"]
+	if stats.Min != 12.0 || stats.Max != 15.0 || stats.Total != 27.0 || stats.Count != 2 {
+		t.Fatalf("Statistiques incorrectes pour Dakar: %+v", stats)
+	}
+
+	stats = statsParVille["Tambacounda"]
+	if stats.Min != 8.9 || stats.Max != 10.0 || stats.Total != 18.9 || stats.Count != 2 {
+		t.Fatalf("Statistiques incorrectes pour Tambacounda: %+v", stats)
+	}
+
+	os.Remove(tmpfile.Name())
 }

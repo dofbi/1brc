@@ -1,8 +1,18 @@
 package calc
 
 import (
+	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
+
+type Stats struct{
+	Min float64
+	Max float64
+	Total float64
+	Count int
+}
 
 func ReadFile(filepath string) ([]byte, error) {
 	body, err := os.ReadFile(filepath)
@@ -40,5 +50,49 @@ func AverageTemperature(temps[]float64) float64{
 		total += temp
 	}
 	return total/float64(len(temps))
+
+}
+
+func CalcTemperature(filePath string)(map[string]Stats, error){
+
+	data, err := ReadFile(filePath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	lignes := strings.Split(string(data), "\n")
+
+	fmt.Println("lignes:", lignes)
+
+	statsParVille := make(map[string]Stats)
+
+	for _, ligne := range lignes {
+		fmt.Println("ligne:", ligne)
+		parts := strings.Split(ligne, ";")
+		ville := parts[0]
+		temperature, err := strconv.ParseFloat(parts[1], 64)
+
+		if err != nil {
+			return nil, err
+		}
+
+		stats := statsParVille[ville]
+
+		if stats.Count == 0 || temperature < stats.Min {
+			stats.Min = temperature
+		}
+
+		if stats.Count == 0 || temperature > stats.Max {
+			stats.Max = temperature
+		}
+
+		stats.Total += temperature
+		stats.Count++
+
+		statsParVille[ville] = stats
+	}
+
+	return statsParVille, nil
 
 }
