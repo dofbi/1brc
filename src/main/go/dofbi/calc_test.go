@@ -111,3 +111,20 @@ func TestPrintStats(t *testing.T){
 		t.Fatalf("Expected %q, got %q", expected, output)
 	}
 }
+
+func BenchmarkCalc(b *testing.B){
+
+	filePath := "../../../../data/weather_stations.csv"
+
+	for i := 0; i < b.N ; i++ {
+
+		statsParville, err := CalcTemperature(filePath)
+
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		PrintStats(statsParville)
+
+	}
+}

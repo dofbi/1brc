@@ -1,4 +1,4 @@
-package main
+package calc
 
 import (
 	"fmt"
@@ -133,15 +133,4 @@ func PrintStats(statsParVille map[string]Stats) error{
 
 	return nil
 
-}
-
-func main (){
-	filePath := "../../../data/weather_stations.csv"
-	statsParville, err := CalcTemperature(filePath)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	PrintStats(statsParville)
 }
