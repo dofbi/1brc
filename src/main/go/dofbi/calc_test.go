@@ -1,6 +1,7 @@
 package calc
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"testing"
@@ -82,4 +83,31 @@ func TestCalcTemperature(t *testing.T){
 	}
 
 	os.Remove(tmpfile.Name())
+}
+
+func TestPrintStats(t *testing.T){
+
+	statsParVille := map[string]Stats{
+		"Dakar": {Min: 12.0, Max: 15.0, Total: 27.0, Count: 2},
+		"Tambacounda": {Min: 8.9, Max: 10.0, Total: 18.9, Count: 2},
+	}
+
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	PrintStats(statsParVille)
+
+	w.Close()
+	os.Stdout = old
+
+	var buf bytes.Buffer
+	buf.ReadFrom(r)
+	output := buf.String()
+
+	expected := "Dakar;12.0;13.5;15.0\nTambacounda;8.9;9.4;10.0\n"
+
+	if output != expected {
+		t.Fatalf("Expected %q, got %q", expected, output)
+	}
 }

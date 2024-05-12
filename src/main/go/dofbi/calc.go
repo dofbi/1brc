@@ -1,8 +1,9 @@
-package calc
+package main
 
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -63,14 +64,17 @@ func CalcTemperature(filePath string)(map[string]Stats, error){
 
 	lignes := strings.Split(string(data), "\n")
 
-	fmt.Println("lignes:", lignes)
-
 	statsParVille := make(map[string]Stats)
 
 	for _, ligne := range lignes {
-		fmt.Println("ligne:", ligne)
+		
+		if strings.HasPrefix(ligne, "#") || strings.TrimSpace(ligne) == "" {
+			continue
+		}
+
 		parts := strings.Split(ligne, ";")
 		ville := parts[0]
+
 		temperature, err := strconv.ParseFloat(parts[1], 64)
 
 		if err != nil {
@@ -95,4 +99,49 @@ func CalcTemperature(filePath string)(map[string]Stats, error){
 
 	return statsParVille, nil
 
+}
+
+func PrintStats(statsParVille map[string]Stats) error{
+	file, err := os.Create("resultats.txt")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	
+	villes := make([]string, 0, len(statsParVille))
+
+	for ville := range statsParVille{
+		villes = append(villes, ville)
+	}
+
+	sort.Strings(villes)
+
+	results := make([]string, len(villes))
+
+	for i, ville := range villes {
+		stats := statsParVille[ville]
+		moyenne := stats.Total / float64(stats.Count)
+
+		results[i] = fmt.Sprintf("%s=%.1f/%.1f/%.1f",ville,stats.Min,moyenne,stats.Max)
+	}
+
+	_, err = fmt.Fprintf(file,"{%s}\n", strings.Join(results, ", "))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func main (){
+	filePath := "../../../data/weather_stations.csv"
+	statsParville, err := CalcTemperature(filePath)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	PrintStats(statsParville)
 }
