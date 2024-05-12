@@ -15,6 +15,11 @@ type Stats struct{
 	Count int
 }
 
+func (s Stats) String() string{
+	moyenne := s.Total / float64(s.Count)
+	return fmt.Sprintf("%.1f/%.1f/%.1f",s.Min,moyenne,s.Max)
+}
+
 func ReadFile(filepath string) ([]byte, error) {
 	body, err := os.ReadFile(filepath)
 
@@ -120,9 +125,8 @@ func PrintStats(statsParVille map[string]Stats) error{
 
 	for i, ville := range villes {
 		stats := statsParVille[ville]
-		moyenne := stats.Total / float64(stats.Count)
 
-		results[i] = fmt.Sprintf("%s=%.1f/%.1f/%.1f",ville,stats.Min,moyenne,stats.Max)
+		results[i] = fmt.Sprintf("%s;%s",ville,stats)
 	}
 
 	_, err = fmt.Fprintf(file,"{%s}\n", strings.Join(results, ", "))
